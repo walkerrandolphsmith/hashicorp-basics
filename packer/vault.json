@@ -1,0 +1,37 @@
+{
+  "variables": {
+    "vault_version": "0.11.1",
+    "aws_access_key": "XXXX",
+    "aws_secret_key": "XXXX"
+  },
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "region": "us-east-1",
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "name": "ubuntu/images/*ubuntu-xenial-16.04-amd64-server-*",
+          "root-device-type": "ebs"
+        },
+        "owners": ["099720109477"],
+        "most_recent": true
+      },
+      "instance_type": "t1.micro",
+      "ssh_username": "ubuntu",
+      "ami_name": "vault-ami-{{timestamp}}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "git clone --branch v0.11.1 https://github.com/hashicorp/terraform-aws-vault.git /tmp/terraform-aws-vault",
+        "/tmp/terraform-aws-vault/modules/install-vault/install-vault --version {{user `vault_version`}}"
+      ],
+      "pause_before": "30s"
+    }
+  ]
+}
